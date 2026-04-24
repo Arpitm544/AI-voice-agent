@@ -78,12 +78,20 @@ def remember_event(event: str) -> str:
     _save_data(data)
     return f"Successfully remembered: '{event}'."
 
-def recall_events() -> str:
-    """Recalls all past events and facts stored in memory."""
+def recall_events(search_query: str = None) -> str:
+    """Recalls all past events and facts stored in memory. Filters by search_query if provided."""
     data = _load_data()
     if not data["memory"]:
         return "No memories stored yet."
+    
+    memories = data["memory"]
+    if search_query:
+        query_words = search_query.lower().split()
+        memories = [m for m in memories if any(word in m.lower() for word in query_words)]
+        if not memories:
+            return f"No memories found matching '{search_query}'."
+            
     res = "Recalled Memories:\n"
-    for idx, m in enumerate(data["memory"]):
+    for idx, m in enumerate(memories):
         res += f"{idx + 1}. {m}\n"
     return res

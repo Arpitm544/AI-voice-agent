@@ -4,6 +4,7 @@ import sys
 from dotenv import load_dotenv
 import tempfile
 
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -18,6 +19,7 @@ def speak(text: str):
     console.print(Panel(text, title="🤖 Agent", border_style="cyan"))
     # Escaping quotes to prevent shell injection issues
     safe_text = text.replace('"', '\\"').replace("'", "\\'")
+    
     os.system(f'say "{safe_text}"')
 
 def listen_to_user(recognizer, microphone):
@@ -39,7 +41,8 @@ def listen_to_user(recognizer, microphone):
         with open(temp_path, "rb") as file:
             transcription = client.audio.transcriptions.create(
                 model="whisper-large-v3",
-                file=("audio.wav", file.read())
+                file=("audio.wav", file.read()),
+                language="en"
             )
             
         text = transcription.text.strip()
@@ -76,7 +79,7 @@ def main():
             if user_text:
                 cleaned_text = user_text.lower().strip()
                 exit_phrases = ["exit", "quit", "stop", "exist", "goodbye", "bye", "stop now", "can we stop now", "stop the agent"]
-                if cleaned_text in exit_phrases:
+                if any(phrase in cleaned_text for phrase in exit_phrases):
                     speak("Goodbye!")
                     break
                 

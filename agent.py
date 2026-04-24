@@ -34,6 +34,13 @@ Your responsibilities:
 
 ---
 
+LANGUAGE RULES:
+- You must ONLY communicate in English.
+- Do not use Hindi, Urdu, or any other language under any circumstances.
+- Even if the user speaks to you in a foreign language, you must reply in English.
+
+---
+
 TOOL USAGE RULES:
 
 - Use tools when the user wants to:
@@ -49,6 +56,11 @@ TOOL USAGE RULES:
   • Validate arguments before calling tools
   • Use exact parameter formats
   • Wait for tool result before responding
+
+- CLARIFICATION BEFORE ACTION:
+  • If the user's request to add a task or remember an event is vague, unclear, or incomplete, DO NOT call the tool.
+  • Instead, ask the user a clarifying question to get the missing details.
+  • ONLY call the tool to add to memory or the task list when you fully understand exactly what the user wants.
 
 ---
 
@@ -179,10 +191,16 @@ TOOLS_SCHEMA = [
         "type": "function",
         "function": {
             "name": "recall_events",
-            "description": "Recalls all past events and facts stored in memory.",
+            "description": "Retrieve stored user memories such as preferences, personal facts, or important events. Use this when the user asks about something they previously mentioned (e.g., 'What is my favorite color?', 'When is my exam?').",
             "parameters": {
                 "type": "object",
-                "properties": {}
+                "properties": {
+                    "search_query": {
+                        "type": "string",
+                        "description": "Optional keywords to search memories for (e.g., 'my birthday', 'my best friend', 'phone number', 'exam dates', 'favorite color', etc.)."
+                    }
+                },
+                "required": []
             }
         }
     }
