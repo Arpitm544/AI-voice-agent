@@ -1,0 +1,18 @@
+# Environments
+.env
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Data
+data.json
+
+# OS generated files
+.DS_Store
