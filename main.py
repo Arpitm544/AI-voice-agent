@@ -75,7 +75,7 @@ def main():
             user_text = listen_to_user(recognizer, microphone)
             if user_text:
                 cleaned_text = user_text.lower().strip()
-                exit_phrases = ["exit", "quit", "stop", "exist", "goodbye", "bye", "stop now", "can we stop now"]
+                exit_phrases = ["exit", "quit", "stop", "exist", "goodbye", "bye", "stop now", "can we stop now", "stop the agent"]
                 if cleaned_text in exit_phrases:
                     speak("Goodbye!")
                     break
