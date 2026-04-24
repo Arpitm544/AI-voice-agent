@@ -8,10 +8,14 @@ import tempfile
 load_dotenv()
 
 from agent import process_interaction, client
+from rich.console import Console
+from rich.panel import Panel
+
+console = Console()
 
 def speak(text: str):
     """Uses macOS built-in say command for Text-to-Speech."""
-    print(f"\nAgent: {text}\n")
+    console.print(Panel(text, title="🤖 Agent", border_style="cyan"))
     # Escaping quotes to prevent shell injection issues
     safe_text = text.replace('"', '\\"').replace("'", "\\'")
     os.system(f'say "{safe_text}"')
@@ -19,7 +23,7 @@ def speak(text: str):
 def listen_to_user(recognizer, microphone):
     """Listens to the microphone and returns the transcribed text."""
     with microphone as source:
-        print("Listening...")
+        console.print("[dim yellow]Listening...[/dim yellow]")
         recognizer.adjust_for_ambient_noise(source)
         try:
             audio = recognizer.listen(source, timeout=5, phrase_time_limit=10)
@@ -27,7 +31,7 @@ def listen_to_user(recognizer, microphone):
             return None
     
     try:
-        print("Recognizing via Groq Whisper...")
+        console.print("[dim yellow]Recognizing via Groq Whisper...[/dim yellow]")
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
             temp_audio.write(audio.get_wav_data())
             temp_path = temp_audio.name
@@ -42,10 +46,10 @@ def listen_to_user(recognizer, microphone):
         os.remove(temp_path)
         
         if text:
-            print(f"User: {text}")
+            console.print(f"[bold green]👤 You:[/bold green] {text}")
         return text
     except Exception as e:
-        print(f"Transcription error: {e}")
+        console.print(f"[bold red]Transcription error: {e}[/bold red]")
         try:
             os.remove(temp_path)
         except:
@@ -76,6 +80,11 @@ def main():
                     speak("Goodbye!")
                     break
                 
+                # Prevent Memory Overload (Sliding Context Window)
+                # If messages list gets too long (e.g. > 15), keep the system prompt [0] and the last 10 interactions
+                if len(messages) > 15:
+                    messages = [messages[0]] + messages[-10:]
+                
                 # Append user message
                 messages.append({"role": "user", "content": user_text})
                 
@@ -87,7 +96,7 @@ def main():
                     if response_text:
                         speak(response_text)
                 except Exception as e:
-                    print(f"Error communicating with AI: {e}")
+                    console.print(f"[bold red]Error communicating with AI: {e}[/bold red]")
                     speak("I'm sorry, I encountered an error connecting to my brain. Let's try that again.")
                     
         except KeyboardInterrupt:

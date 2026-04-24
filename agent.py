@@ -3,6 +3,9 @@ import os
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv
+from rich.console import Console
+
+console = Console()
 
 from tools import add_todo, update_todo, delete_todo, list_todos, remember_event, recall_events
 
@@ -205,12 +208,12 @@ def process_interaction(messages: list) -> tuple:
             )
             break
         except openai.RateLimitError:
-            print(f"Rate limit hit for {current_model}. Switching to fallback model...")
+            console.print(f"[bold red]Rate limit hit for {current_model}. Switching to fallback model...[/bold red]")
             current_model = "meta-llama/llama-4-scout-17b-16e-instruct"
             continue
         except openai.BadRequestError as e:
             if "tool_use_failed" in str(e) and attempt < max_retries - 1:
-                print(f"Caught Groq formatting bug (attempt {attempt+1}), retrying...")
+                console.print(f"[bold yellow]Caught Groq formatting bug (attempt {attempt+1}), retrying...[/bold yellow]")
                 messages.append({"role": "system", "content": "Your previous tool call failed due to incorrect formatting. You MUST output standard JSON and absolutely no XML tags. Try again."})
                 continue
             else:
@@ -228,7 +231,7 @@ def process_interaction(messages: list) -> tuple:
                 function_args = json.loads(arguments_str) if arguments_str else {}
                 if function_args is None:
                     function_args = {}
-                print(f"Agent called tool: {function_name} with {function_args}")
+                console.print(f"[bold magenta]⚙️  Agent called tool:[/bold magenta] {function_name} [dim]with {function_args}[/dim]")
                 function_response = function_to_call(**function_args)
                 
                 messages.append(
@@ -258,12 +261,12 @@ def process_interaction(messages: list) -> tuple:
                 )
                 break
             except openai.RateLimitError:
-                print(f"Rate limit hit for {current_model} in final response. Switching to fallback model...")
+                console.print(f"[bold red]Rate limit hit for {current_model} in final response. Switching to fallback model...[/bold red]")
                 current_model = "meta-llama/llama-4-scout-17b-16e-instruct"
                 continue
             except openai.BadRequestError as e:
                 if "tool_use_failed" in str(e) and attempt < max_retries - 1:
-                    print(f"Caught Groq formatting bug in final response (attempt {attempt+1}), retrying...")
+                    console.print(f"[bold yellow]Caught Groq formatting bug in final response (attempt {attempt+1}), retrying...[/bold yellow]")
                     messages.append({"role": "system", "content": "Your previous tool call failed due to incorrect formatting. You MUST output standard JSON and absolutely no XML tags. Try again."})
                     continue
                 else:
